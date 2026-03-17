@@ -1,17 +1,15 @@
-<<<<<<< Updated upstream
-# Miscellaneous
-*.class
-=======
-# Environment
+# ============================================================
+# ENVIRONMENT & CREDENTIALS (MUST IGNORE)
+# ============================================================
 .env
 .env.local
+.env.*.local
+secrets/
+private/
 
-# Node
-node_modules/
-npm-debug.log
-yarn-error.log
-
-# Python
+# ============================================================
+# PYTHON VIRTUAL ENVIRONMENTS & PACKAGES
+# ============================================================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -19,87 +17,104 @@ __pycache__/
 .Python
 venv/
 env/
-
-# ML Models
-ml/saved_models/*.pkl
-ml/saved_models/*.h5
-ml/experiments/
-
-# Flutter - Build artifacts
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-build/
-pubspec.lock
 .venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# iOS
-ios/Flutter/Flutter.framework/
-ios/Flutter/Flutter.podspec
+# ============================================================
+# DATABASE FILES (AUTO-GENERATED - DO NOT COMMIT)
+# ============================================================
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+data/
 
-# Android
-android/.gradle/
-android/local.properties
-android/**/GeneratedPluginRegistrant.java
+# ============================================================
+# ML MODELS & LARGE FILES
+# ============================================================
+ml_models/
+ml/saved_models/
+ml/experiments/
+*.pkl
+*.h5
+*.joblib
+*.model
 
-# macOS/Linux/Windows build outputs
-macos/
-linux/
-windows/
-
-# IDE
+# ============================================================
+# IDE & EDITOR CONFIGURATIONS
+# ============================================================
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
->>>>>>> Stashed changes
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.build/
-.buildlog/
-.history
-.svn/
-.swiftpm/
-migrate_working_dir/
-
-# IntelliJ related
+*.swn
 *.iml
 *.ipr
 *.iws
-.idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
+# ============================================================
+# FLUTTER/DART BUILD ARTIFACTS
+# ============================================================
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
+pubspec.lock
 .pub-cache/
 .pub/
 /build/
 /coverage/
-
-# Symbolication related
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
+**/doc/api/
 
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+# ============================================================
+# iOS BUILD ARTIFACTS
+# ============================================================
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/.last_build_id
+ios/Pods/
+ios/Podfile.lock
+
+# ============================================================
+# ANDROID BUILD ARTIFACTS
+# ============================================================
+android/.gradle/
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/.kotlin/
+
+# ============================================================
+# OS SPECIFIC FILES
+# ============================================================
+.DS_Store
+Thumbs.db
+.atom/
+.history/
+
+# ============================================================
+# LOGS & TEMPORARY FILES
+# ============================================================
+*.log
+*.logs
+migrate_working_dir/
+.svn/
+.swiftpm/
+
+# ============================================================
+# NODE (if any npm dependencies)
+# ============================================================
+node_modules/
+npm-debug.log
+yarn-error.log

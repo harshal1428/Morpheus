@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'services/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -428,7 +430,99 @@ class ProfileScreen extends StatelessWidget {
         _buildSettingsListItem('Security'),
         const SizedBox(height: 12),
         _buildSettingsListItem('Help & Support'),
+        const SizedBox(height: 12),
+        Builder(
+          builder: (context) => _buildLogoutButton(context),
+        ),
       ],
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        // Show confirmation dialog
+        showDialog(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            backgroundColor: const Color(0xFF163339),
+            title: const Text(
+              'Sign Out',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: const Text(
+              'Are you sure you want to sign out?',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF5DF22A)),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(dialogContext);
+                  final authService = context.read<AuthService>();
+                  await authService.signOut();
+                },
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E4A52),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.red.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.logout,
+                  color: Colors.red[400],
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Sign Out',
+                  style: TextStyle(
+                    color: Colors.red[400],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.red[400],
+              size: 16,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

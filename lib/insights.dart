@@ -16,6 +16,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   bool _showAnomaliesExpanded = false;
+  bool _showSubscriptions = false;
 
   @override
   void initState() {
@@ -199,6 +200,111 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               style: TextStyle(color: accentGreen, fontWeight: FontWeight.bold),
                             ),
                             TextSpan(text: ' Great job!'),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    
+                    // Subscriptions Button
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => Dialog(
+                            backgroundColor: bgColor,
+                            child: SingleChildScrollView(
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text(
+                                          'Active Subscriptions',
+                                          style: TextStyle(
+                                            color: textPrimary,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          icon: const Icon(Icons.close, color: textSecondary),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 20),
+                                    _buildSubscriptionCard(
+                                      name: 'Netflix',
+                                      icon: '🎬',
+                                      monthlyPrice: 149.0,
+                                      buyDate: 'Jan 15, 2026',
+                                      expiryDate: 'Mar 15, 2026',
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _buildSubscriptionCard(
+                                      name: 'Hotstar',
+                                      icon: '📺',
+                                      monthlyPrice: 199.0,
+                                      buyDate: 'Feb 1, 2026',
+                                      expiryDate: 'Mar 1, 2026',
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _buildSubscriptionCard(
+                                      name: 'Coursera',
+                                      icon: '📚',
+                                      monthlyPrice: 6499.0,
+                                      buyDate: 'Jan 20, 2026',
+                                      expiryDate: 'Apr 20, 2026',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: accentGreen.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: accentGreen.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(
+                                  Icons.subscriptions,
+                                  color: accentGreen,
+                                  size: 24,
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  'View Active Subscriptions',
+                                  style: TextStyle(
+                                    color: accentGreen,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: accentGreen.withOpacity(0.7),
+                              size: 16,
+                            ),
                           ],
                         ),
                       ),
@@ -707,6 +813,153 @@ class _InsightsScreenState extends State<InsightsScreen> {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(6),
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionCard({
+    required String name,
+    required String icon,
+    required double monthlyPrice,
+    required String buyDate,
+    required String expiryDate,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E9EA), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    icon,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          color: textDark,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '₹${monthlyPrice.toStringAsFixed(0)}/month',
+                        style: const TextStyle(
+                          color: textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Chip(
+                label: const Text(
+                  'Active',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                backgroundColor: accentGreen.withOpacity(0.7),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Buy Date',
+                    style: TextStyle(color: Color(0xFF6B7E82), fontSize: 12),
+                  ),
+                  Text(
+                    buyDate,
+                    style: const TextStyle(
+                      color: textDark,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Expiry Date',
+                    style: TextStyle(color: Color(0xFF6B7E82), fontSize: 12),
+                  ),
+                  Text(
+                    expiryDate,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Opening $name app settings...'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentGreen.withOpacity(0.2),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: const Icon(
+                Icons.link,
+                color: accentGreen,
+                size: 18,
+              ),
+              label: const Text(
+                'Go to App Settings',
+                style: TextStyle(
+                  color: accentGreen,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

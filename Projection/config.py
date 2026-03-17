@@ -16,6 +16,10 @@ ENGINE_DIR: Path = Path(__file__).resolve().parent
 # Main project root: e:/Morpheus/
 PROJECT_ROOT: Path = ENGINE_DIR.parent
 
+# Ensure data directory exists BEFORE any database operations
+DATA_DIR = PROJECT_ROOT / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 
 class Settings(BaseSettings):
     # ── App Identity ─────────────────────────────────────────────────────────
@@ -24,13 +28,14 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # ── Server ────────────────────────────────────────────────────────────────
-    HOST: str = "0.0.0.0"
+    HOST: str = "127.0.0.1"
     PORT: int = 8001
 
     # ── Database ──────────────────────────────────────────────────────────────
     # Points to the main project's finance.db (read existing tables).
+    # Uses absolute path for Windows compatibility
     # Override via PROJECTION_DB_URL env var for Docker / remote setups.
-    DATABASE_URL: str = f"sqlite:///{PROJECT_ROOT}/data/finance.db"
+    DATABASE_URL: str = f"sqlite:///{DATA_DIR.as_posix()}/finance.db"
 
     # ── Monte Carlo Simulation ────────────────────────────────────────────────
     MC_SIMULATIONS: int = 1000          # Number of simulation paths

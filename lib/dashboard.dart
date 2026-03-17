@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import 'services/api_service.dart';
+import 'services/auth_service.dart';
+import 'utils/budget_tracker.dart';
+import 'widgets/price_tag_scanner.dart';
+import 'widgets/budget_display.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -40,11 +45,13 @@ class _ComponentMeta {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final ApiService _apiService = ApiService();
-  final int _userId = 1; // TODO: wire to authenticated user
+  final BudgetTracker _budgetTracker = BudgetTracker();
 
   DashboardSummary? _summary;
   bool _isLoading = true;
   String? _error;
+
+  late String _userId;
 
   static const List<_ComponentMeta> _componentMeta = [
     _ComponentMeta(
@@ -90,14 +97,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   @override
+  @override
   void initState() {
     super.initState();
+    // Get user ID from authentication service
+    final authService = context.read<AuthService>();
+    _userId = authService.userId ?? '1'; // Fallback to '1' for testing
     _loadSummary();
   }
 
   Future<void> _loadSummary() async {
     try {
-      final summary = await _apiService.getDashboardSummary(userId: _userId);
+      // Convert UUID to integer or use as string
+      final userIdInt = int.tryParse(_userId) ?? 1;
+      final summary = await _apiService.getDashboardSummary(userId: userIdInt);
       if (!mounted) return;
       setState(() {
         _summary = summary;
@@ -169,6 +182,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _buildHeroBanner(),
           const SizedBox(height: 32),
           _buildStabilityScore(),
+          const SizedBox(height: 30),
+          // Price Tag Scanner
+          PriceTagScannerWidget(budgetTracker: _budgetTracker),
+          const SizedBox(height: 20),
+          // Budget Display
+          BudgetDisplayWidget(budgetTracker: _budgetTracker),
           const SizedBox(height: 30),
           _buildIncomeSavingsRow(),
           const SizedBox(height: 20),

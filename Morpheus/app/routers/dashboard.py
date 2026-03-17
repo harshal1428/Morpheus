@@ -298,27 +298,27 @@ def dashboard_summary(user_id: int = 1, db: Session = Depends(get_db)):
         "metrics": metrics_payload,
     }
 
-        # ── Momentum / Streak Engine ─────────────────────────────
-        from app.models.savings_activity import SavingsActivity
-        from app.engines.momentum_streak_engine import calculate_streak_score
-        # Get last 7 months of savings activity
-        streak_activities = (
-            db.query(SavingsActivity)
-            .filter(SavingsActivity.user_id == user_id)
-            .order_by(SavingsActivity.month_key.desc())
-            .limit(7)
-            .all()
-        )
-        streak_activity_dicts = [
-            {
-                "month_key": sa.month_key,
-                "contributed": sa.contributed,
-                "missed": sa.missed,
-                "total_sip_amount": sa.total_sip_amount,
-            }
-            for sa in reversed(streak_activities)
-        ]
-        streak_metrics = calculate_streak_score(streak_activity_dicts)
+    # ── Momentum / Streak Engine ─────────────────────────────
+    from app.models.savings_activity import SavingsActivity
+    from app.engines.momentum_streak_engine import calculate_streak_score
+    # Get last 7 months of savings activity
+    streak_activities = (
+        db.query(SavingsActivity)
+        .filter(SavingsActivity.user_id == user_id)
+        .order_by(SavingsActivity.month_key.desc())
+        .limit(7)
+        .all()
+    )
+    streak_activity_dicts = [
+        {
+            "month_key": sa.month_key,
+            "contributed": sa.contributed,
+            "missed": sa.missed,
+            "total_sip_amount": sa.total_sip_amount,
+        }
+        for sa in reversed(streak_activities)
+    ]
+    streak_metrics = calculate_streak_score(streak_activity_dicts)
 
     return {
         "success": True,

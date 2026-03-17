@@ -424,7 +424,7 @@ async def create_goal(
                 # Auto-create emergency fund
                 from app.models import Account
                 accounts = db.query(Account).filter(Account.user_id == user_id).all()
-                total_balance = sum(acc.balance for acc in accounts) if accounts else 0
+                total_balance = sum(acc.current_balance for acc in accounts) if accounts else 0
                 
                 # Default target: 3 months of expenses or 50k
                 emergency_target = max(150000.0, total_balance * 0.5)  # 3x monthly avg or 50% of current balance

@@ -11,6 +11,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # Project root (two levels up from this file)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Ensure data directory exists BEFORE config is used
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 
 class Settings(BaseSettings):
     # ── App Identity ─────────────────────────────────────────
@@ -19,7 +23,8 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # ── Database ─────────────────────────────────────────────
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR}/data/finance.db"
+    # Use as_posix() to convert Windows backslashes to forward slashes
+    DATABASE_URL: str = f"sqlite:///{DATA_DIR.as_posix()}/finance.db"
 
     # ── Security ─────────────────────────────────────────────
     SECRET_KEY: str = "super-secret-key-change-in-production-2024"
@@ -45,17 +50,3 @@ class Settings(BaseSettings):
 # Singleton settings instance
 settings = Settings()
 
-# Ensure data and model directories exist at import time
-(BASE_DIR / "data").mkdir(parents=True, exist_ok=True)
-(BASE_DIR / "ml_models" / "categorization_model" / "artifacts").mkdir(
-    parents=True, exist_ok=True
-)
-(BASE_DIR / "ml_models" / "anomaly_detection_model" / "artifacts").mkdir(
-    parents=True, exist_ok=True
-)
-(BASE_DIR / "ml_models" / "goal_feasibility_model" / "artifacts").mkdir(
-    parents=True, exist_ok=True
-)
-(BASE_DIR / "ml_models" / "investment_readiness_model" / "artifacts").mkdir(
-    parents=True, exist_ok=True
-)

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'services/api_service.dart';
 
 class GoalsScreen extends StatefulWidget {
@@ -16,6 +17,20 @@ class _GoalsScreenState extends State<GoalsScreen> {
   bool _isLoading = true;
   String? _error;
 
+  // Market Ticker Variables
+  late Timer _tickerTimer;
+  int _currentHeadlineIndex = 0;
+  static const List<String> marketHeadlines = [
+    'US Inflation Rises to 3.4%, Fed Rate Cut Hopes Fade',
+    'Oil Climbs 2% on Middle East Tensions',
+    'Gold Hits 2-Week High Amid Dollar Weakness',
+    'Fed Officials Signal Prolonged Rate Hold',
+    'Tech Stock Selloff Deepens on Higher Rates',
+    'Oil Supply Concerns Support Prices',
+    'Dollar Strengthens Against Major Currencies',
+    'Global Trade Growth Slows Amid Uncertainty',
+  ];
+
   // Theme Colors
   static const Color bgColor = Color(0xFF163339);
   static const Color accentGreen = Color(0xFF5DF22A);
@@ -29,6 +44,21 @@ class _GoalsScreenState extends State<GoalsScreen> {
   void initState() {
     super.initState();
     _loadGoals();
+    
+    // Initialize market ticker: rotate every 4 seconds
+    _tickerTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentHeadlineIndex = (_currentHeadlineIndex + 1) % marketHeadlines.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tickerTimer.cancel();
+    super.dispose();
   }
 
   Future<void> _loadGoals() async {
@@ -149,6 +179,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
     return Column(
       children: [
+        _buildMarketTicker(),
+        const SizedBox(height: 24),
         if (goals.isEmpty)
           Container(
             padding: const EdgeInsets.all(32),
@@ -162,6 +194,60 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ...goals.map((goal) => _buildGoalCard(goal)).toList(),
         const SizedBox(height: 40),
       ],
+    );
+  }
+
+  Widget _buildMarketTicker() {
+    return Container(
+      width: double.infinity,
+      height: 60,
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E9EA), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.trending_up,
+                color: accentGreen,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
+                  child: Text(
+                    key: ValueKey(_currentHeadlineIndex),
+                    marketHeadlines[_currentHeadlineIndex],
+                    style: const TextStyle(
+                      color: textDark,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -401,13 +487,14 @@ class _GoalsScreenState extends State<GoalsScreen> {
     final deadlineController = TextEditingController();
     String selectedType = 'custom';
     int selectedPriority = 2;
-    bool isCreating = false;
     double? calculatedSip;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
+        builder: (context, setState) {
+          bool isCreating = false;
+          return AlertDialog(
           backgroundColor: cardBg,
           title: const Text(
             'Create New Goal',
@@ -582,16 +669,22 @@ class _GoalsScreenState extends State<GoalsScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: isCreating ? null : () => _createNewGoal(
-                goalNameController.text,
-                selectedType,
-                targetAmountController.text,
-                currentSavedController.text,
-                deadlineController.text,
-                selectedPriority,
-                calculatedSip,
-                context,
-              ),
+              onPressed: isCreating ? null : () async {
+                setState(() => isCreating = true);
+                await _createNewGoal(
+                  goalNameController.text,
+                  selectedType,
+                  targetAmountController.text,
+                  currentSavedController.text,
+                  deadlineController.text,
+                  selectedPriority,
+                  calculatedSip,
+                  context,
+                );
+                if (mounted) {
+                  setState(() => isCreating = false);
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentGreen,
               ),
@@ -607,7 +700,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   : const Text('Create'),
             ),
           ],
-        ),
+        );
+        },
       ),
     );
   }
@@ -659,9 +753,11 @@ class _GoalsScreenState extends State<GoalsScreen> {
     BuildContext context,
   ) async {
     if (goalName.isEmpty || targetAmount.isEmpty || currentSaved.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all required fields')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill in all required fields')),
+        );
+      }
       return;
     }
 
@@ -683,20 +779,27 @@ class _GoalsScreenState extends State<GoalsScreen> {
       if (!mounted) return;
 
       if (response['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Goal created! Monthly SIP: ${_formatCurrency(response['monthly_contribution'] ?? 0)}',
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Goal created! Monthly SIP: ${_formatCurrency(response['monthly_contribution'] ?? 0)}',
+              ),
+              duration: const Duration(seconds: 3),
             ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-        Navigator.pop(context);
-        _loadGoals(); // Refresh goals list
+          );
+          // Pop the dialog using the provided context
+          Navigator.of(context, rootNavigator: true).pop();
+          // Refresh the goals list
+          await Future.delayed(const Duration(milliseconds: 300));
+          _loadGoals();
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${response['error'] ?? 'Unknown error'}')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${response['error'] ?? 'Unknown error'}')),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;

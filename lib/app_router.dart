@@ -5,6 +5,7 @@ import 'dashboard.dart';
 import 'expenses.dart';
 import 'goals.dart';
 import 'insights.dart';
+import 'projection.dart';
 import 'profile.dart';
 import 'start.dart';
 import 'signup.dart';
@@ -64,6 +65,10 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) => const InsightsScreen(),
         ),
         GoRoute(
+          path: '/projection',
+          builder: (context, state) => const ProjectionScreen(),
+        ),
+        GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfileScreen(),
         ),
@@ -96,7 +101,7 @@ class AppShellScaffold extends StatelessWidget {
       if (location.startsWith('/expenses')) return 1;
       if (location.startsWith('/goals')) return 2;
       if (location.startsWith('/insights')) return 3;
-      if (location.startsWith('/profile')) return 4;
+      if (location.startsWith('/projection')) return 4;
       return 0;
     }
 
@@ -153,13 +158,13 @@ class AppShellScaffold extends StatelessWidget {
                 selectedIndex: _getSelectedIndex(),
                 route: '/insights',
               ),
-               _buildBottomNavItem(
+              _buildBottomNavItem(
                 context,
-                icon: Icons.person_outline,
-                label: 'Profile',
+                icon: Icons.trending_up,
+                label: 'Projection',
                 index: 4,
                 selectedIndex: _getSelectedIndex(),
-                route: '/profile',
+                route: '/projection',
               ),
             ],
           ),

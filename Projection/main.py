@@ -57,6 +57,8 @@ async def lifespan(app: FastAPI):
     logger.info("⚙  Initialising projection tables …")
     init_projection_tables()
     logger.info("✅ Projection tables ready.")
+    logger.info(f"📊 Access the dashboard at: http://{settings.HOST}:{settings.PORT}/ui")
+    logger.info(f"📖 API docs available at: http://{settings.HOST}:{settings.PORT}/docs")
     yield
     logger.info("🔌 Projection engine shutting down.")
 

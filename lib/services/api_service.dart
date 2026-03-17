@@ -173,6 +173,11 @@ class ApiService {
     }
   }
 
+  /// Alias for processReceiptImage - scans receipt text for price tag detection
+  Future<OCRResult> scanReceiptText({required String imagePath}) async {
+    return processReceiptImage(imagePath: imagePath);
+  }
+
   // ────────────────────────────────────────────────────────
   // MERCHANT MANAGEMENT ENDPOINTS
   // ────────────────────────────────────────────────────────
@@ -387,7 +392,7 @@ class ApiService {
   /// Fetch transactions for a user
   Future<TransactionListResponse> getTransactions({required int userId, int limit = 100}) async {
     try {
-      final uri = Uri.parse('$baseUrl/transactions/list').replace(
+      final uri = Uri.parse('$baseUrl/transactions/').replace(
         queryParameters: {
           'user_id': userId.toString(),
           'limit': limit.toString(),
@@ -402,10 +407,7 @@ class ApiService {
       );
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        if (jsonResponse['success'] == true) {
-          return TransactionListResponse.fromJson(jsonResponse);
-        }
-        throw Exception(jsonResponse['error'] ?? 'Failed to load transactions');
+        return TransactionListResponse.fromJson(jsonResponse);
       } else {
         throw Exception('Failed to load transactions: ${response.statusCode} - ${response.body}');
       }
@@ -445,6 +447,185 @@ class ApiService {
       }
     } catch (e) {
       debugPrint('Error in addTransaction: $e');
+      rethrow;
+    }
+  }
+
+  // ────────────────────────────────────────────────────────
+  // PROJECTION ANALYTICS ENDPOINTS (Port 8001)
+  // ────────────────────────────────────────────────────────
+
+  /// Get probabilistic forecast with confidence bands
+  Future<Map<String, dynamic>> getProjectionForecast({
+    required int userId,
+  }) async {
+    try {
+      final projectionUrl = 'http://${_apiHost.split(':')[0]}:8001/api/forecast/$userId';
+      final response = await http.get(
+        Uri.parse(projectionUrl),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Forecast request timed out'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['status'] == 'success') {
+          return jsonResponse['data'] ?? {};
+        }
+        throw Exception(jsonResponse['error'] ?? 'Failed to load forecast');
+      } else {
+        throw Exception('Failed to load forecast: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in getProjectionForecast: $e');
+      rethrow;
+    }
+  }
+
+  /// Get adaptive budgets for current month
+  Future<Map<String, dynamic>> getAdaptiveBudgets({
+    required int userId,
+  }) async {
+    try {
+      final projectionUrl = 'http://${_apiHost.split(':')[0]}:8001/api/forecast/$userId/adaptive-budgets';
+      final response = await http.get(
+        Uri.parse(projectionUrl),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Adaptive budgets request timed out'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['status'] == 'success') {
+          return jsonResponse['data'] ?? {};
+        }
+        throw Exception(jsonResponse['error'] ?? 'Failed to load budgets');
+      } else {
+        throw Exception('Failed to load budgets: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in getAdaptiveBudgets: $e');
+      rethrow;
+    }
+  }
+
+  /// Get savings opportunities
+  Future<Map<String, dynamic>> getSavingsOpportunities({
+    required int userId,
+  }) async {
+    try {
+      final projectionUrl = 'http://${_apiHost.split(':')[0]}:8001/api/savings-opportunities/$userId';
+      final response = await http.get(
+        Uri.parse(projectionUrl),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Savings opportunities request timed out'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['status'] == 'success') {
+          return jsonResponse['data'] ?? {};
+        }
+        throw Exception(jsonResponse['error'] ?? 'Failed to load savings data');
+      } else {
+        throw Exception('Failed to load savings data: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in getSavingsOpportunities: $e');
+      rethrow;
+    }
+  }
+
+  /// Get shock absorption capacity
+  Future<Map<String, dynamic>> getShockCapacity({
+    required int userId,
+  }) async {
+    try {
+      final projectionUrl = 'http://${_apiHost.split(':')[0]}:8001/api/shock-engine/$userId';
+      final response = await http.get(
+        Uri.parse(projectionUrl),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Shock capacity request timed out'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] == true) {
+          return jsonResponse['data'] ?? {};
+        }
+        throw Exception(jsonResponse['error'] ?? 'Failed to load shock data');
+      } else {
+        throw Exception('Failed to load shock data: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in getShockCapacity: $e');
+      rethrow;
+    }
+  }
+
+  /// Get LLM insight for shock analysis
+  Future<Map<String, dynamic>> getLLMInsight({
+    required int userId,
+  }) async {
+    try {
+      final projectionUrl = 'http://${_apiHost.split(':')[0]}:8001/api/shock-engine/$userId/insight';
+      final response = await http.get(
+        Uri.parse(projectionUrl),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('LLM insight request timed out'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] == true) {
+          return jsonResponse['data'] ?? {};
+        }
+        throw Exception(jsonResponse['error'] ?? 'Failed to load LLM insight');
+      } else {
+        throw Exception('Failed to load LLM insight: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in getLLMInsight: $e');
+      rethrow;
+    }
+  }
+
+  /// Simulate a custom shock amount
+  Future<Map<String, dynamic>> simulateShock({
+    required int userId,
+    required double shockAmount,
+  }) async {
+    try {
+      final projectionUrl = 'http://${_apiHost.split(':')[0]}:8001/api/shock-engine/$userId/simulate?shock_amount=$shockAmount';
+      final response = await http.post(
+        Uri.parse(projectionUrl),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw TimeoutException('Shock simulation request timed out'),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        if (jsonResponse['success'] == true) {
+          return jsonResponse['data'] ?? {};
+        }
+        throw Exception(jsonResponse['error'] ?? 'Failed to simulate shock');
+      } else {
+        throw Exception('Failed to simulate shock: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in simulateShock: $e');
       rethrow;
     }
   }
